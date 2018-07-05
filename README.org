@@ -49,7 +49,6 @@
   
   To define a reader macro, for instance, that reverses strings; try:
 
-  #+BEGIN_QUOTE
   #+BEGIN_SRC clojure
   (def reversed-string-reader
     (fn [reader quote opts pending-forms]
@@ -64,34 +63,29 @@
 
   "backwards     \ns'ti yllufepoh ,txet fo gnirts a si sihT  !olleH"
   #+END_SRC
-  #+END_QUOTE
 
   There's a convenient with-read-table function to alter 
   the read-table (currently does not target dispatch macros):
 
-  #+BEGIN_QUOTE
-  #+BEGIN_SRC clojure
-    (use '[clojure.string :only (reverse)])
-    
+  
+  #+BEGIN_SRC clojure        
     (set-macro-character \"
-     (fn [reader quote]
-       (reverse (macro-read-string reader quote))))
-    
+     (fn [reader quote _ _]
+       (clojure.string/reverse (macro-read-string reader quote))))    
     (println "hello, reader macros")
     => sorcam redaer ,olleh
   #+END_SRC
-  #+END_QUOTE
+  
 
   Finally, if everything blows up and you don't
   want to remain in a reader-macroed world anymore,
   you can get back the default read table by:
   
-  #+BEGIN_QUOTE
+  
   #+BEGIN_SRC clojure
   (reset-read-tables!)
   #+END_SRC
-  #+END_QUOTE
-
+  
   We've also exposed a few utility functions from
   =clojure.lang.LispReader= to help extract things from readers:
 
@@ -128,10 +122,12 @@
   and use it followingly:
 
   #+BEGIN_SRC clojure
+    (require '[reader-macros.core :refer :all])
+    ;;or, deprecated
     (use 'reader-macros.core)
   #+END_SRC
 
-* Examples
+* More Examples
   
  We can define simple readers as name functions, then use them:
  #+BEGIN_SRC clojure
@@ -144,6 +140,7 @@
      sdrawkcab\"")
   (with-macro-character \" reversed-string-reader
     (read-string testdata))
+  ;;"backwards     \ns'ti yllufepoh ,txet fo gnirts a si sihT  !olleH"
   #+END_SRC
  Let's mess with lists by reversing the order in which they're
  supposed to be read!
@@ -157,6 +154,7 @@
   
   (with-macro-character \( reversed-list-reader
     (read-string testlist))
+  ;;(d c b a)
   #+END_SRC
 
   For reading generic collections, we can use read-dimilited-list,
