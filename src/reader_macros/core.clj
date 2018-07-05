@@ -26,14 +26,6 @@
               ~@body)
           (finally (set-macro-character char# original#)))))
 
-(defmacro with-dispatch-character [character read & body]
-  `(let [char# ~character
-         read#     ~read
-         original# (get-dispatch-macro-character char#)]
-     (try (do (set-dispatch-macro-character char# read#)
-              ~@body)
-          (finally (set-dispatch-macro-character char# original#)))))
-
 (def lisp-readers
   (->> (seq macros)
        (map-indexed (fn [idx r] (when r [(char idx)  (str r)])))
@@ -47,14 +39,6 @@
 
 (def +default-dispatch-macros+ (aclone dispatch-macros))
 
-(defn reset-read-tables!
-  "Undo all the damage we've wrought!"
-  []
-  (doseq [[c r] (map-indexed vector +default-macros+)]
-    (set-macro-character c r))
-  (doseq [[c r] (map-indexed vector +default-dispatch-macros+)]
-    (set-dispatch-macro-character c r)))
-
 (defn set-dispatch-macro-character  [character read]
   (aset dispatch-macros (int character) read))
 
@@ -66,6 +50,23 @@
        (map-indexed (fn [idx r] (when r [(char idx)  (str r)])))
        (filter identity)
        (into {})))
+
+(defmacro with-dispatch-macro-character [character read & body]
+  `(let [char# ~character
+         read#     ~read
+         original# (get-dispatch-macro-character char#)]
+     (try (do (set-dispatch-macro-character char# read#)
+              ~@body)
+          (finally (set-dispatch-macro-character char# original#)))))
+
+
+(defn reset-read-tables!
+  "Undo all the damage we've wrought!"
+  []
+  (doseq [[c r] (map-indexed vector +default-macros+)]
+    (set-macro-character c r))
+  (doseq [[c r] (map-indexed vector +default-dispatch-macros+)]
+    (set-dispatch-macro-character c r)))
 
 ;;;; Dynamically define convenience functions.
 (defn class->predicates [class]
