@@ -46,7 +46,13 @@
 	
        Evaluates body in the context of an altered read-table.
 
-  
+  Notably, the LispReader in clojure (and hence most reader functions) 
+  take 4 args: =[reader quote opts pending-forms]=.  Where possible,
+  we've limited the API to use the first two (ala Common Lisp).
+  The =opts= and =pending-forms= args are related to conditional 
+  compilation, and currently aren't a concern, other than the 
+  arity they introduce to reader functions.  
+
   To define a reader macro, for instance, that reverses strings; try:
 
   #+BEGIN_SRC clojure
